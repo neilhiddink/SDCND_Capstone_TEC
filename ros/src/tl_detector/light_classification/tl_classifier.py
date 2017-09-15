@@ -6,8 +6,8 @@ import sys
 import tensorflow as tf
 from collections import defaultdict
 from io import StringIO
-from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as vis_util
+from utilities import label_map_util
+from utilities import visualization_utils as vis_util
 import time
 
 class TLClassifier(object):
