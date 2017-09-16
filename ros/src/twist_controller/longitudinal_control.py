@@ -3,8 +3,8 @@ GAS_DENSITY = 2.858
 ONE_MPH = 0.44704
 
 
-class Controller(object):
-    def __init__(self, *args, **kwargs):
+class LongitudinalController(object):
+    def __init__(self, vehicle_mass, wheel_radius, accel_limit, decel_limit):
         # TODO: Implement
         pass
 
