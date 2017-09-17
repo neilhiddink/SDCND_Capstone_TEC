@@ -87,6 +87,9 @@ class DBWNode(object):
             #                                                     <current linear velocity>,
             #                                                     <dbw status>,
             #                                                     <any other argument you need>)
+            close_way_point_id = dbw_helper.get_closest_waypoint_index(self.pose, self.waypoints)
+            ref_spd = self.waypoints[close_way_point_id].pose.twist.x
+
             throttle, brake, steer = self.controller.control()
             if self.dbw_enabled:
               self.publish(throttle, brake, steer)

@@ -4,7 +4,7 @@ ONE_MPH = 0.44704
 
 
 class LateralController(object):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, vehicle_mass, wheel_base, steer_ratio, max_lat_accel, max_steer_angle):
         # TODO: Implement
         pass
 
