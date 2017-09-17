@@ -4,3 +4,7 @@ build
 devel
 
 profile.tmp
+.vs
+sim_data_capture
+ros/src/data
+ros/src/tl_detector/light_classification/graphs
