@@ -1,3 +1,5 @@
+from pid import PID
+
 
 GAS_DENSITY = 2.858
 ONE_MPH = 0.44704
@@ -23,7 +25,9 @@ class LongitudinalController(object):
         # TODO: Change the arg, kwarg list to suit your needs
         # Return throttle, brake, steer
 
-
+        controller = PID(kp=100, ki=0.1, kd=10)
+        speed_error = ref_spd - current_spd
+        acceleration = controller.step(speed_error, sample_time=1)
 
         torque = self.vehicle_mass * acceleration * self.wheel_radius
         throttle, brake = 0, 0
@@ -35,3 +39,4 @@ class LongitudinalController(object):
             throttle, brake = 0.0, min(abs(torque), self.max_break_torque)
 
         return throttle, brake
+
