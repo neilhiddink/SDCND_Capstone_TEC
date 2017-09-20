@@ -27,7 +27,7 @@ class LateralController(object):
             time_diff = 1e-6
         cte_distance, cte_yaw = dbw_helper.cte(pose, waypoints, polynomial_order=3, evaluation_locaiton=5, points_to_fit=10)
 
-        controller = PID(kp=0.015, ki=0.0000001, kd=0.005)
+        controller = PID(kp=0.01, ki=0.000001, kd=0.005)
 
         if abs(cte_distance)>20:
             controller.reset()
