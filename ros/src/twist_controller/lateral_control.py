@@ -1,4 +1,5 @@
 import dbw_helper
+import rospy
 from pid import PID
 
 GAS_DENSITY = 2.858
@@ -14,13 +15,33 @@ class LateralController(object):
         self.max_steer_angle = max_steer_angle_
         self.max_steer_angle_cmd = max_steer_angle_*steer_ratio_
         self.sample_time = None
+        self.time_step = rospy.get_time()
 
     def set_sample_time(self, sample_time_):
         self.sample_time = sample_time_
 
-    def control(self, pose, waypoints):
-        cte_distance, cte_yaw = dbw_helper.cte(pose, waypoints)
-        controller = PID(kp=100, ki=0.1, kd=10)
-        steering = controller.step(cte_distance, self.sample_time)
+    def control(self, pose, waypoints, dbw_enabled):
+        new_time_step = rospy.get_time()
+        time_diff = new_time_step - self.time_step
+        if time_diff < 1e-6:
+            time_diff = 1e-6
+        cte_distance, cte_yaw = dbw_helper.cte(pose, waypoints, polynomial_order=3, evaluation_locaiton=5, points_to_fit=10)
 
-        return steering
+        controller = PID(kp=0.015, ki=0.00001, kd=0.01)
+
+        if abs(cte_distance)>20:
+            controller.reset()
+
+        steering = -controller.step(cte_distance, self.sample_time)
+        steering_cmd = steering
+
+        if steering_cmd > self.max_steer_angle:
+            steering_cmd = self.max_steer_angle
+        if steering_cmd < -self.max_steer_angle:
+            steering_cmd = -self.max_steer_angle
+
+        self.time_step = new_time_step
+        if dbw_enabled:
+            return steering_cmd, cte_distance, cte_yaw
+        controller.reset()
+        return 0, 0, 0

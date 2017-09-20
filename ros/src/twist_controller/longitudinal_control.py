@@ -24,7 +24,7 @@ class LongitudinalController(object):
     def set_sample_time(self, sample_time_):
         self.sample_time = sample_time_
 
-    def control(self, ref_spd, current_spd):
+    def control(self, ref_spd, current_spd, dbw_enabled):
         # TODO: Change the arg, kwarg list to suit your needs
         # Return throttle, brake, steer
 
@@ -41,5 +41,8 @@ class LongitudinalController(object):
             # brake is the torque we need to apply
             throttle, brake = 0.0, min(abs(torque), self.max_break_torque)
 
-        return throttle, brake
+        if dbw_enabled:
+            return throttle, brake
+        controller.reset()
+        return 0, 0
 

@@ -2,8 +2,6 @@ from math import sqrt, cos, sin
 import numpy as np
 import math
 
-POINTS_TO_FIT = 10
-
 
 def get_Euler_Angle(pose):
     """Returns the roll, pitch yaw angles from a Quaternion \
@@ -135,7 +133,7 @@ def coordinate_transform_global_to_local(pose, waypoints, points_to_use=None):
     return x_coords, y_coords
 
 
-def cte(pose, waypoints, polynomial_order=3, evaluation_locaiton=3):
+def cte(pose, waypoints, polynomial_order=3, evaluation_locaiton=3, points_to_fit=10):
     """
     Estimate trajectory tracking performance
     Args:
@@ -149,8 +147,11 @@ def cte(pose, waypoints, polynomial_order=3, evaluation_locaiton=3):
         yaw_error(float) : angular difference between current pose and trajectory,
         positive if yaw to right
     """
+    if points_to_fit>len(waypoints):
+        points_to_fit = len(waypoints)
+
     x_coords, y_coords = coordinate_transform_global_to_local(
-        pose, waypoints, POINTS_TO_FIT)
+        pose, waypoints, points_to_fit)
     coefficients = np.polyfit(x_coords, y_coords, polynomial_order)
     distance = np.polyval(coefficients, evaluation_locaiton)
     gradient = np.polyval(np.polyder(coefficients, 1), evaluation_locaiton)
