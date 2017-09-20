@@ -19,7 +19,10 @@ class LongitudinalController(object):
         self.max_throttle_torque = accel_limit_ * vehicle_mass_ * wheel_radius_
         self.max_break_torque = decel_limit_ * vehicle_mass_ * wheel_radius_
         self.damping = damping
+        self.sample_time = None
 
+    def set_sample_time(self, sample_time_):
+        self.sample_time = sample_time_
 
     def control(self, ref_spd, current_spd):
         # TODO: Change the arg, kwarg list to suit your needs
@@ -27,7 +30,7 @@ class LongitudinalController(object):
 
         controller = PID(kp=100, ki=0.1, kd=10)
         speed_error = ref_spd - current_spd
-        acceleration = controller.step(speed_error, sample_time=1)
+        acceleration = controller.step(speed_error, self.sample_time)
 
         torque = self.vehicle_mass * acceleration * self.wheel_radius
         throttle, brake = 0, 0

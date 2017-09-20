@@ -50,7 +50,7 @@ class WaypointUpdater(object):
 
     def loop(self):
         """ Publishes car index and subset of waypoints with target velocities """
-        rate = rospy.Rate(30)
+        rate = rospy.Rate(10)
 
         while not rospy.is_shutdown():
             rate.sleep()

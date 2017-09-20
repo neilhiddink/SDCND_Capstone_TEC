@@ -13,11 +13,14 @@ class LateralController(object):
         self.max_lat_accel = max_lat_accel_
         self.max_steer_angle = max_steer_angle_
         self.max_steer_angle_cmd = max_steer_angle_*steer_ratio_
+        self.sample_time = None
 
+    def set_sample_time(self, sample_time_):
+        self.sample_time = sample_time_
 
     def control(self, pose, waypoints):
         cte_distance, cte_yaw = dbw_helper.cte(pose, waypoints)
         controller = PID(kp=100, ki=0.1, kd=10)
-        steering = controller.step(cte_distance, sample_time=1)
+        steering = controller.step(cte_distance, self.sample_time)
 
         return steering
