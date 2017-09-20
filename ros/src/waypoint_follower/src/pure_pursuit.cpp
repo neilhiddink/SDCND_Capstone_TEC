@@ -32,11 +32,9 @@
 
 constexpr int LOOP_RATE = 30; //processing frequency
 
-//
-// JLM: Changed queue sizes from 10 to 1 to drop out-of-date messages. Based on
-// https://github.com/amakurin/CarND-Capstone/commit/9809bc60d51c06174f8c8bfe6c40c88ec1c39d50
-//
-const int PUB_SUB_QUEUE_SIZE = 1;
+
+constexpr int PUB_SUB_QUEUE_SIZE = 1;
+
 
 int main(int argc, char **argv)
 {
@@ -56,6 +54,7 @@ int main(int argc, char **argv)
 
   ROS_INFO("set publisher...");
   // publish topic
+
   ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", PUB_SUB_QUEUE_SIZE);
 
   ROS_INFO("set subscriber...");
