@@ -59,6 +59,7 @@ class DBWNode(object):
                                          BrakeCmd, queue_size=1)
 
         # TODO: Create `TwistController` object
+
         self.controller = Controller()
 
         self.dbw_enabled = False
@@ -68,6 +69,7 @@ class DBWNode(object):
         self.yawrate = None
         self.current_command = None
 
+
         # TODO: Subscribe to all the topics you need to
         rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb, queue_size=1)
         rospy.Subscriber('/final_waypoints', Lane, self.waypoint_cb, queue_size=1)
@@ -75,10 +77,14 @@ class DBWNode(object):
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb, queue_size=1)
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb, queue_size=1)
 
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.callback_twist_cmd)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.callback_current_velocity)
+        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.callback_dbw_enabled)
+
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(50) # 50Hz
+        rate = rospy.Rate(10) # 10Hz
         while not rospy.is_shutdown():
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
             # You should only publish the control commands if dbw is enabled
@@ -87,12 +93,14 @@ class DBWNode(object):
             #                                                     <current linear velocity>,
             #                                                     <dbw status>,
             #                                                     <any other argument you need>)
+
             close_way_point_id = dbw_helper.get_closest_waypoint_index(self.pose, self.waypoints)
             ref_spd = self.waypoints[close_way_point_id].pose.twist.x
 
             throttle, brake, steer = self.controller.control()
             if self.dbw_enabled:
               self.publish(throttle, brake, steer)
+
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
@@ -128,6 +136,7 @@ class DBWNode(object):
 
     def pose_cb(self, msg):
         self.current_pose = msg.pose
+
 
 
 if __name__ == '__main__':

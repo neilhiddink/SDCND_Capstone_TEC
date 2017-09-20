@@ -27,6 +27,7 @@ MPH_TO_MPS = 0.44704
 MAX_SPEED = 10.0 * MPH_TO_MPS #: Vehicle speed limit
 LOOKAHEAD_WPS = 30  #: Number of waypoints we will publish
 
+
 class WaypointUpdater(object):
     def __init__(self):
         rospy.init_node('waypoint_updater')
