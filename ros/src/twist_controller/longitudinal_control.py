@@ -1,10 +1,5 @@
 from pid import PID
 
-
-GAS_DENSITY = 2.858
-ONE_MPH = 0.44704
-
-
 class LongitudinalController(object):
     def __init__(self,
                  vehicle_mass_,
@@ -20,12 +15,16 @@ class LongitudinalController(object):
         self.max_break_torque = decel_limit_ * vehicle_mass_ * wheel_radius_
         self.damping = damping
         self.sample_time = None
+        self.cv = 0.32      # rolling resistance
+        self.cr = 0.01      # aerodynamics drag
+        self.g = 9.8        # gravity
+        self.frontal_area = 2.4
+        self.air_density = 2.858
 
     def set_sample_time(self, sample_time_):
         self.sample_time = sample_time_
 
     def control(self, ref_spd, current_spd, dbw_enabled):
-        # TODO: Change the arg, kwarg list to suit your needs
         # Return throttle, brake, steer
 
         controller = PID(kp=100, ki=0.1, kd=10)
@@ -33,6 +32,42 @@ class LongitudinalController(object):
         acceleration = controller.step(speed_error, self.sample_time)
 
         torque = self.vehicle_mass * acceleration * self.wheel_radius
+        throttle, brake = 0, 0
+        if torque > 0:
+            # throttle is the percent of max torque applied
+            throttle, brake = min(1.0, torque / self.max_throttle_torque), 0.0
+        else:
+            # brake is the torque we need to apply
+            throttle, brake = 0.0, min(abs(torque), self.max_break_torque)
+
+        if dbw_enabled:
+            return throttle, brake
+        controller.reset()
+        return 0, 0
+
+    def set_feed_forward_parameter(self, cv_=0.32, cr_=0.01, g_=9.8, frontal_area_=2.4, air_density_=2.858):
+        self.cv = cv_  # rolling resistance
+        self.cr = cr_  # aerodynamics drag
+        self.g = g_  # gravity
+        self.frontal_area = frontal_area_
+        self.air_density = air_density_
+
+    def control_lqr(self, ref_spd, current_spd, dbw_enabled):
+        # use LQR to calculate state feedback with integrator
+        # augment state: [speed_error;error_integrate]
+        # weight for state: [10000,1]
+
+        controller = PID(kp=115.4496, ki=1, kd=0)
+        speed_error = ref_spd - current_spd
+
+        rolling_resistance = self.vehicle_mass*self.g*self.cr
+        aerodynamics_drag = 0.5 * self.air_density*self.cv*self.frontal_area*ref_spd*ref_spd
+        force_feed_forward = rolling_resistance+aerodynamics_drag
+
+        force_feed_back = controller.step(speed_error, self.sample_time)
+
+        torque = (force_feed_back+force_feed_forward) * self.wheel_radius
+
         throttle, brake = 0, 0
         if torque > 0:
             # throttle is the percent of max torque applied
