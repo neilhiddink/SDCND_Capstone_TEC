@@ -84,6 +84,7 @@ class DBWNode(object):
                                             0.0,
                                             max_lat_accel,
                                             max_steer_angle)
+
         self.dbw_enabled = False
         self.waypoints = None
         self.pose = None
@@ -181,6 +182,7 @@ class DBWNode(object):
     def pose_cb(self, msg):
         self.pose = msg.pose
         self.frame_id = msg.header.frame_id
+
 
 
 
