@@ -56,8 +56,9 @@ class LongitudinalController(object):
         # use LQR to calculate state feedback with integrator
         # augment state: [speed_error;error_integrate]
         # weight for state: [10000,1]
+        # reference speed is used as linearization point for aerodynamics drag
 
-        controller = PID(kp=115.4496, ki=1, kd=0)
+        controller = PID(kp=1016.591507833025, ki=10, kd=0)
         speed_error = ref_spd - current_spd
 
         rolling_resistance = self.vehicle_mass*self.g*self.cr
