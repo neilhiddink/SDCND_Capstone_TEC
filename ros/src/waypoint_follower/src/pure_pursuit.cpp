@@ -32,7 +32,9 @@
 
 constexpr int LOOP_RATE = 30; //processing frequency
 
+
 constexpr int PUB_SUB_QUEUE_SIZE = 1;
+
 
 int main(int argc, char **argv)
 {
@@ -52,7 +54,9 @@ int main(int argc, char **argv)
 
   ROS_INFO("set publisher...");
   // publish topic
-ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", PUB_SUB_QUEUE_SIZE);
+
+  ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", PUB_SUB_QUEUE_SIZE);
+
   ROS_INFO("set subscriber...");
   // subscribe topic
   ros::Subscriber waypoint_subscriber =

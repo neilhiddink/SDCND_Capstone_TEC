@@ -9,8 +9,11 @@ from styx_msgs.msg import Lane
 
 import math
 
+from twist_controller import Controller
 from longitudinal_control import LongitudinalController
 from lateral_control import LateralController
+from yaw_controller import YawController
+
 
 import dbw_helper
 
@@ -82,6 +85,7 @@ class DBWNode(object):
                                             0.0,
                                             max_lat_accel,
                                             max_steer_angle)
+
         self.dbw_enabled = False
         self.waypoints = None
         self.pose = None
@@ -111,7 +115,9 @@ class DBWNode(object):
                     or self.pose is None \
                     or self.velocity is None:
                 continue
+            
             fieldnames = ['proposed', 'cte_distance', 'cte_yaw']
+
 
             # with open(self.throttlefile, 'w') as csvfile:
             #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -125,10 +131,12 @@ class DBWNode(object):
 
             close_way_point_id = dbw_helper.get_closest_waypoint_index(self.pose, self.waypoints)
             ref_spd = self.waypoints[close_way_point_id].twist.twist.linear.x
+
             ref_yaw = self.waypoints[close_way_point_id].twist.twist.angular.z
 
             throttle, brake = self.longitudinal_control.control_lqr(ref_spd, self.velocity, self.dbw_enabled)
             steer, cte_distance, cte_yaw = self.lateral_control.control_preview(self.pose, self.waypoints, self.dbw_enabled, ref_spd)
+
 #             self.steer_data.append({'proposed': steer,
 #                                     'cte_distance': cte_distance,
 #                                     'cte_yaw': cte_yaw})
@@ -139,7 +147,7 @@ class DBWNode(object):
 #                 writer.writerows(self.steer_data)
 
             if self.dbw_enabled:
-              self.publish(throttle, brake, steer)
+              self.publish(throttle, brake, steer+yaw_steer_ff)
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
@@ -181,3 +189,4 @@ class DBWNode(object):
 
 if __name__ == '__main__':
     DBWNode()
+
