@@ -9,10 +9,8 @@ from styx_msgs.msg import Lane
 
 import math
 
-from twist_controller import Controller
 from longitudinal_control import LongitudinalController
 from lateral_control import LateralController
-from yaw_controller import YawController
 
 import dbw_helper
 
@@ -70,12 +68,12 @@ class DBWNode(object):
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb)
 
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        self.steerfile = os.path.join(base_path, 'steers.csv')
+#         base_path = os.path.dirname(os.path.abspath(__file__))
+#         self.steerfile = os.path.join(base_path, 'steers.csv')
         # self.throttlefile = os.path.join(base_path, 'throttles.csv')
         # self.brakefile = os.path.join(base_path, 'brakes.csv')
 
-        self.steer_data = []
+#         self.steer_data = []
 
         self.longitudinal_control = LongitudinalController(vehicle_mass, wheel_radius, accel_limit, decel_limit)
         self.lateral_control = LateralController(vehicle_mass, wheel_base, steer_ratio, max_lat_accel, max_steer_angle)
@@ -128,23 +126,20 @@ class DBWNode(object):
             close_way_point_id = dbw_helper.get_closest_waypoint_index(self.pose, self.waypoints)
             ref_spd = self.waypoints[close_way_point_id].twist.twist.linear.x
             ref_yaw = self.waypoints[close_way_point_id].twist.twist.angular.z
-            yaw_steer_ff = self.yaw_controller.get_steering(ref_spd,
-                                                            ref_yaw,
-                                                            self.velocity)
 
             throttle, brake = self.longitudinal_control.control_lqr(ref_spd, self.velocity, self.dbw_enabled)
             steer, cte_distance, cte_yaw = self.lateral_control.control_preview(self.pose, self.waypoints, self.dbw_enabled, ref_spd)
-            self.steer_data.append({'proposed': steer,
-                                    'cte_distance': cte_distance,
-                                    'cte_yaw': cte_yaw})
+#             self.steer_data.append({'proposed': steer,
+#                                     'cte_distance': cte_distance,
+#                                     'cte_yaw': cte_yaw})
 
-            with open(self.steerfile, 'w') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writeheader()
-                writer.writerows(self.steer_data)
+#             with open(self.steerfile, 'w') as csvfile:
+#                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+#                 writer.writeheader()
+#                 writer.writerows(self.steer_data)
 
             if self.dbw_enabled:
-              self.publish(throttle, brake, steer + 0*yaw_steer_ff)
+              self.publish(throttle, brake, steer)
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
