@@ -61,7 +61,6 @@ class TLDetector(object):
 
         def light_warm_up_guard():
             self.light_classifier_is_ready = True
-            print("light classifier loaded")
             t.cancel()
 
         print("Loading light classifier (5 second timer)")

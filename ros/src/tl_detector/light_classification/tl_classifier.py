@@ -92,7 +92,7 @@ class TLClassifier(object):
         if run_network is True:
             image_np_expanded = np.expand_dims(image, axis=0)
 
-            time0 = time.time()
+            #time0 = time.time()
 
             # Actual detection.
             with self.detection_graph.as_default():
@@ -101,9 +101,10 @@ class TLClassifier(object):
                     self.detection_classes, self.num_detections],
                     feed_dict={self.image_tensor: image_np_expanded})
 
-            time1 = time.time()
 
-            print("Time in milliseconds", (time1 - time0) * 1000) 
+            #time1 = time.time()
+
+            #print("Time in milliseconds", (time1 - time0) * 1000) 
             
             boxes = np.squeeze(boxes)
             scores = np.squeeze(scores)
@@ -145,9 +146,11 @@ class TLClassifier(object):
 
                     estimated_distance = round((perceived_depth_x + perceived_depth_y) / 2)
 
-                    print("perceived_width", perceived_width_x, perceived_width_y)
-                    print("perceived_depth", perceived_depth_x, perceived_depth_y)
-                    print("Average depth (ft?)", estimated_distance)
+
+                    #print("perceived_width", perceived_width_x, perceived_width_y)
+                    #print("perceived_depth", perceived_depth_x, perceived_depth_y)
+                    #print("Average depth (ft?)", estimated_distance)
+
 
             # Visualization of the results of a detection.
             vis_util.visualize_boxes_and_labels_on_image_array(
