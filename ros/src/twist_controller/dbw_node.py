@@ -14,6 +14,7 @@ from longitudinal_control import LongitudinalController
 from lateral_control import LateralController
 from yaw_controller import YawController
 
+
 import dbw_helper
 
 '''
@@ -55,7 +56,7 @@ class DBWNode(object):
         wheel_base = rospy.get_param('~wheel_base', 2.8498)
         steer_ratio = rospy.get_param('~steer_ratio', 14.8)
         max_lat_accel = rospy.get_param('~max_lat_accel', 3.)
-        max_steer_angle = rospy.get_param('~max_steer_angle', 8.)
+        max_steer_angle = rospy.get_param('~max_steer_angle', 8.)   # for steering wheel
 
         self.steer_pub = rospy.Publisher('/vehicle/steering_cmd',
                                          SteeringCmd, queue_size=1)
@@ -114,7 +115,9 @@ class DBWNode(object):
                     or self.pose is None \
                     or self.velocity is None:
                 continue
-#             fieldnames = ['proposed', 'cte_distance', 'cte_yaw']
+            
+            fieldnames = ['proposed', 'cte_distance', 'cte_yaw']
+
 
             # with open(self.throttlefile, 'w') as csvfile:
             #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -129,12 +132,11 @@ class DBWNode(object):
             close_way_point_id = dbw_helper.get_closest_waypoint_index(self.pose, self.waypoints)
             ref_spd = self.waypoints[close_way_point_id].twist.twist.linear.x
 
-            yaw_steer_ff = self.yaw_controller.get_steering(self.current_command.linear.x,
-                                                            self.current_command.angular.z,
-                                                            self.velocity)
+            ref_yaw = self.waypoints[close_way_point_id].twist.twist.angular.z
 
-            throttle, brake = self.longitudinal_control.control(ref_spd, self.velocity, self.dbw_enabled)
-            steer, cte_distance, cte_yaw = self.lateral_control.control(self.pose, self.waypoints, self.dbw_enabled)
+            throttle, brake = self.longitudinal_control.control_lqr(ref_spd, self.velocity, self.dbw_enabled)
+            steer, cte_distance, cte_yaw = self.lateral_control.control_preview(self.pose, self.waypoints, self.dbw_enabled, ref_spd)
+
 #             self.steer_data.append({'proposed': steer,
 #                                     'cte_distance': cte_distance,
 #                                     'cte_yaw': cte_yaw})
@@ -182,7 +184,6 @@ class DBWNode(object):
     def pose_cb(self, msg):
         self.pose = msg.pose
         self.frame_id = msg.header.frame_id
-
 
 
 

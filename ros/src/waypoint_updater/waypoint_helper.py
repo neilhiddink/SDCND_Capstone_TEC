@@ -1,5 +1,5 @@
 from math import cos, sin, sqrt
-
+import tf
 import rospy
 import numpy as np
 import math
@@ -26,28 +26,11 @@ def make_lane_object(frame_id, waypoints):
 
 
 def get_Euler_Angle(pose):
-    """Returns the roll, pitch yaw angles from a Quaternion \
-    Args:
-        pose: geometry_msgs/Pose.msg
-    Returns:
-        roll (float), pitch (float), yaw (float)
-    """
-    ysqr = pose.orientation.y * pose.orientation.y
-
-    t0 = +2.0 * (pose.orientation.w * pose.orientation.x + pose.orientation.y * pose.orientation.z)
-    t1 = +1.0 - 2.0 * (pose.orientation.x * pose.orientation.x + ysqr)
-    roll = math.degrees(math.atan2(t0, t1))
-
-    t2 = +2.0 * (pose.orientation.w * pose.orientation.y - pose.orientation.z * pose.orientation.x)
-    t2 = 1 if t2 > 1 else t2
-    t2 = -1 if t2 < -1 else t2
-    pitch = math.degrees(math.asin(t2))
-
-    t3 = +2.0 * (pose.orientation.w * pose.orientation.z + pose.orientation.x * pose.orientation.y)
-    t4 = +1.0 - 2.0 * (ysqr + pose.orientation.z * pose.orientation.z)
-    yaw = math.degrees(math.atan2(t3, t4))
-
-    return roll, pitch, yaw
+    """Returns the roll, pitch yaw angles from a Quaternion """
+    return tf.transformations.euler_from_quaternion([pose.orientation.x,
+                                                     pose.orientation.y,
+                                                     pose.orientation.z,
+                                                     pose.orientation.w])
 
 
 def get_distance(a, b):
