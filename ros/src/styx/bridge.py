@@ -36,8 +36,9 @@ TYPE = {
 
 
 class Bridge(object):
-    def __init__(self, conf):
+    def __init__(self, conf, server):
         rospy.init_node('styx_server')
+        self.server = server
         self.vel = 0.
         self.yaw = None
         self.angular_vel = 0.
