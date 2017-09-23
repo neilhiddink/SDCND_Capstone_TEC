@@ -101,9 +101,23 @@ def fit_polynomial(waypoints, degree):
 
 
 def calculateRCurve(coeffs, X):
-    """calculates the radius of curvature"""
+    """
+    calculates the radius of curvature
+    Args:
+        coeffs (vector) :polyfit coefficient of waypoints
+        X (1D np array) : location to evaluate radius of curvature
+    Return:
+        radius_output (1D np array) : radius of curvature for X
+    """
     if coeffs is None:
         return None
-    a = coeffs[0]
-    b = coeffs[1]
-    return (1 + (2 * a * X + b) ** 2) ** 1.5 / np.absolute(2 * a)
+    coeffs_diff_1 = np.polyder(coeffs, 1)
+    coeffs_diff_2 = np.polyder(coeffs, 2)
+
+    radius_output = np.zeros(X.shape[0])
+    for x_index in range(X.shape[0]):
+        individual_x = X[x_index]
+        radius = (1 + (np.polyval(coeffs_diff_1, individual_x) ** 2) ** 1.5) \
+                 / np.absolute(np.polyval(coeffs_diff_2, individual_x))
+        radius_output[x_index] = radius
+    return radius_output

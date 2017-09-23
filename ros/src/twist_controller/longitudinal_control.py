@@ -24,9 +24,17 @@ class LongitudinalController(object):
     def set_sample_time(self, sample_time_):
         self.sample_time = sample_time_
 
-    def control(self, ref_spd, current_spd, dbw_enabled):
-        # Return throttle, brake, steer
-
+    def control_pid(self, ref_spd, current_spd, dbw_enabled):
+        """
+        use PID to get throttle and brake
+        Args:
+            ref_spd(float): desired speed [m/s]
+            current_spd(float): actual speed [m/s]
+            dbw_enabled(bool): control enabled
+        Returns:
+            throttle(float): percentage throttle request
+            brake(float): request absolute brake torque [Nm]
+        """
         controller = PID(kp=100, ki=0.1, kd=10)
         speed_error = ref_spd - current_spd
         acceleration = controller.step(speed_error, self.sample_time)
@@ -53,12 +61,23 @@ class LongitudinalController(object):
         self.air_density = air_density_
 
     def control_lqr(self, ref_spd, current_spd, dbw_enabled):
-        # use LQR to calculate state feedback with integrator
-        # augment state: [speed_error;error_integrate]
-        # weight for state: [10000,1]
-        # reference speed is used as linearization point for aerodynamics drag
+        """
+        use LQR to calculate state feedback with integrator
+        augment state: [speed_error;error_integration]
+        weight for state: [10000,1]
+        weight for control: 1/10000
+        reference speed is used as linearization point for aerodynamics drag
+        nominal force is used as feedforward for reference speed
+        Args:
+            ref_spd(float): desired speed [m/s]
+            current_spd(float): actual speed [m/s]
+            dbw_enabled(bool): control enabled
+        Returns:
+            throttle(float): percentage throttle request
+            brake(float): request absolute brake torque [Nm]
+        """
 
-        controller = PID(kp=1016.591507833025, ki=10, kd=0)
+        controller = PID(kp=1.001672447099650e+07, ki=10000, kd=0)
         speed_error = ref_spd - current_spd
 
         rolling_resistance = self.vehicle_mass*self.g*self.cr
@@ -79,6 +98,7 @@ class LongitudinalController(object):
 
         if dbw_enabled:
             return throttle, brake
+
         controller.reset()
         return 0, 0
 

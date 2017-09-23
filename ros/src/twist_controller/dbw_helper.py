@@ -3,12 +3,14 @@ import numpy as np
 import math
 import tf
 
+
 def get_Euler_Angle(pose):
     """Returns the roll, pitch yaw angles from a Quaternion """
     return tf.transformations.euler_from_quaternion([pose.orientation.x,
                                                      pose.orientation.y,
                                                      pose.orientation.z,
                                                      pose.orientation.w])
+
 
 def get_distance(a, b):
     """Returns distance between two points"""
@@ -72,12 +74,27 @@ def fit_polynomial(waypoints, degree):
 
 
 def calculateRCurve(coeffs, X):
-    """calculates the radius of curvature"""
+    """
+    calculates the radius of curvature
+    Args:
+        coeffs (np array) :polyfit coefficient of waypoints
+        X (1D np array) : location to evaluate radius of curvature
+    Return:
+        radius_output (1D np array) : radius of curvature for X
+    """
     if coeffs is None:
         return None
-    a = coeffs[0]
-    b = coeffs[1]
-    return (1 + (2 * a * X + b) ** 2) ** 1.5 / np.absolute(2 * a)
+    coeffs_diff_1 = np.polyder(coeffs, 1)
+    coeffs_diff_2 = np.polyder(coeffs, 2)
+
+    radius_output = np.zeros(X.shape[0])
+    for x_index in range(X.shape[0]):
+        individual_x = X[x_index]
+        radius = (1 + (np.polyval(coeffs_diff_1, individual_x) ** 2) ** 1.5) \
+                 / np.polyval(coeffs_diff_2, individual_x)
+        radius_output[x_index] = -radius
+
+    return radius_output
 
 
 def coordinate_transform_global_to_local(pose, waypoints, points_to_use=None):
@@ -115,7 +132,17 @@ def coordinate_transform_global_to_local(pose, waypoints, points_to_use=None):
     return x_coords, y_coords
 
 
-def cte(pose, waypoints, polynomial_order=3, evaluation_locaiton=3, points_to_fit=10):
+def fit_waypoints(pose, waypoints, polynomial_order=3, points_to_fit=10):
+    if points_to_fit > len(waypoints):
+        points_to_fit = len(waypoints)
+
+    x_coords, y_coords = coordinate_transform_global_to_local(
+        pose, waypoints, points_to_fit)
+
+    return np.polyfit(x_coords, y_coords, polynomial_order)
+
+
+def cte(coefficients, evaluation_locaiton=3):
     """
     Estimate trajectory tracking performance
     Args:
@@ -128,15 +155,11 @@ def cte(pose, waypoints, polynomial_order=3, evaluation_locaiton=3, points_to_fi
         vehicle located at rightside of trajectory
         yaw_error(float) : angular difference between current pose and trajectory,
         positive if yaw to right
+        coefficients(np array) :polyfit coefficient of waypoints
     """
-    if points_to_fit>len(waypoints):
-        points_to_fit = len(waypoints)
 
-    x_coords, y_coords = coordinate_transform_global_to_local(
-        pose, waypoints, points_to_fit)
-    coefficients = np.polyfit(x_coords, y_coords, polynomial_order)
     distance = np.polyval(coefficients, evaluation_locaiton)
     gradient = np.polyval(np.polyder(coefficients, 1), evaluation_locaiton)
-    angle = -math.degrees(math.tan(gradient))
+    angle = math.atan(gradient)
 
     return distance, angle
