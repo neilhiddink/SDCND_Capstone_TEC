@@ -1,13 +1,13 @@
 import dbw_helper
 import rospy
 from pid import PID
-from math import atan
+import math
 import numpy as np
 
 
 class LateralController(object):
     def __init__(self, vehicle_mass_, wheel_base_, steer_ratio_, max_lat_accel_,
-                 max_steer_angle_, min_speed_, evaluation_location_):
+                 max_steer_angle_, min_speed_, evaluation_location_, delay_=0.):
         self.vehicle_mass = vehicle_mass_
         self.wheel_base = wheel_base_
         self.steer_ratio = steer_ratio_
@@ -19,6 +19,8 @@ class LateralController(object):
         self.int_val = 0.0
         self.coefficients = None
         self.evaluation_location = evaluation_location_
+        self.control_action_last = 0
+        self.delay = delay_
 
     def set_sample_time(self, sample_time_):
         self.sample_time = sample_time_
@@ -29,12 +31,21 @@ class LateralController(object):
         if abs(ref_speed) > 0.1:
             min_radius = ref_speed**2/self.max_lat_accel
 
-        angle = atan(self.wheel_base / max(min_radius, radius)) * self.steer_ratio
+        angle = math.atan(self.wheel_base / max(min_radius, radius)) * self.steer_ratio
 
         return angle
 
-    def set_waypoint_coeff(self, pose, waypoints, polynomial_order=3, points_to_fit=20):
-        self.coefficients = dbw_helper.fit_waypoints(pose, waypoints,
+    def set_waypoint_coeff(self, pose, waypoints,
+                           current_spd,
+                           polynomial_order=3, points_to_fit=20):
+
+        _, _, yaw = dbw_helper.get_Euler_Angle(pose)
+
+        pose.position.x = pose.position.x+current_spd*self.delay*math.cos(yaw)
+        pose.position.y = pose.position.y+current_spd*self.delay*math.sin(yaw)
+        yaw = yaw+math.tan(self.control_action_last)*self.delay/self.wheel_base*current_spd
+
+        self.coefficients = dbw_helper.fit_waypoints(pose, waypoints, yaw,
                                                      polynomial_order=polynomial_order,
                                                      points_to_fit=points_to_fit)
         return self.coefficients
@@ -101,17 +112,20 @@ class LateralController(object):
         cte = k_y*cte_distance + k_yaw*cte_yaw + k_y_int*self.int_val
 
         steering = cte
-        steering_cmd = atan(steering)*self.steer_ratio
+        steering_cmd = math.atan(steering)*self.steer_ratio
 
         if steering_cmd > self.max_steer_angle_cmd:
             steering_cmd = self.max_steer_angle_cmd
         if steering_cmd < -self.max_steer_angle_cmd:
             steering_cmd = -self.max_steer_angle_cmd
 
+        self.control_action_last = steering_cmd/self.steer_ratio
+
         if dbw_enabled:
             return steering_cmd, cte_distance, cte_yaw
 
         self.int_val = 0.0
+        self.control_action_last = 0
 
         return 0, 0, 0
 
@@ -152,7 +166,7 @@ class LateralController(object):
         cte = k_y * cte_distance + k_yaw * cte_yaw + k_y_int * self.int_val
 
         steering = cte
-        steering_feedback_cmd = atan(steering) * self.steer_ratio
+        steering_feedback_cmd = math.atan(steering) * self.steer_ratio
 
         steering_cmd = steering_feedforward_cmd + steering_feedback_cmd
 

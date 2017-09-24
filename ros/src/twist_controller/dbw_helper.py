@@ -97,7 +97,7 @@ def calculateRCurve(coeffs, X):
     return radius_output
 
 
-def coordinate_transform_global_to_local(pose, waypoints, points_to_use=None):
+def coordinate_transform_global_to_local(pose, yaw, waypoints, points_to_use=None):
     """
     From a pose object transfrom a series of waypoints from global
     coordinate to vehicle local coordinate
@@ -111,8 +111,8 @@ def coordinate_transform_global_to_local(pose, waypoints, points_to_use=None):
     """
     x_coords = []
     y_coords = []
-
-    _, _, yaw = get_Euler_Angle(pose)
+    if yaw is None:
+        _, _, yaw = get_Euler_Angle(pose)
     originX = pose.position.x
     originY = pose.position.y
 
@@ -132,12 +132,12 @@ def coordinate_transform_global_to_local(pose, waypoints, points_to_use=None):
     return x_coords, y_coords
 
 
-def fit_waypoints(pose, waypoints, polynomial_order=3, points_to_fit=10):
+def fit_waypoints(pose, waypoints, yaw=None, polynomial_order=3, points_to_fit=10):
     if points_to_fit > len(waypoints):
         points_to_fit = len(waypoints)
 
     x_coords, y_coords = coordinate_transform_global_to_local(
-        pose, waypoints, points_to_fit)
+        pose, yaw, waypoints, points_to_fit)
 
     return np.polyfit(x_coords, y_coords, polynomial_order)
 

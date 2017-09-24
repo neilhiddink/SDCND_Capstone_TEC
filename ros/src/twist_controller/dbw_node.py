@@ -38,7 +38,7 @@ that we have created in the `__init__` function.
 '''
 
 SAMPLE_RATE = 10.0 #Hz
-
+DELAY = 0.035 #s
 
 class DBWNode(object):
     def __init__(self):
@@ -76,9 +76,13 @@ class DBWNode(object):
         # self.steer_data = []
         # self.speed_data = []
 
-        self.longitudinal_control = LongitudinalController(vehicle_mass, wheel_radius, accel_limit, decel_limit)
+        self.longitudinal_control = LongitudinalController(vehicle_mass,
+                                                           wheel_radius,
+                                                           accel_limit,
+                                                           decel_limit,
+                                                           DELAY)
         self.lateral_control = LateralController(vehicle_mass, wheel_base, steer_ratio,
-                                                 max_lat_accel, max_steer_angle, 0, 5)
+                                                 max_lat_accel, max_steer_angle, 0, 5, DELAY)
 
         self.dbw_enabled = False
         self.waypoints = None
@@ -104,11 +108,15 @@ class DBWNode(object):
 
             close_way_point_id = dbw_helper.get_closest_waypoint_index(self.pose, self.waypoints)
             ref_spd_raw = self.waypoints[close_way_point_id].twist.twist.linear.x
-            waypoint_coefficient = self.lateral_control.set_waypoint_coeff(self.pose, self.waypoints,
+            waypoint_coefficient = self.lateral_control.set_waypoint_coeff(self.pose, self.waypoints, self.velocity,
                                                                            polynomial_order=3,
                                                                            points_to_fit=20)
 
-            current_radius = dbw_helper.calculateRCurve(waypoint_coefficient, np.array([3, 5, 7]))
+            sample_time_displacement = sample_time*ref_spd_raw
+            radius_evaluation_point = np.array([0.4*sample_time_displacement,
+                                                0.5*sample_time_displacement,
+                                                0.6*sample_time_displacement])
+            current_radius = dbw_helper.calculateRCurve(waypoint_coefficient, radius_evaluation_point)
             max_ref_spd = self.lateral_control.get_max_ref_speed(np.average(current_radius))
 
             ref_spd = ref_spd_raw
@@ -121,16 +129,7 @@ class DBWNode(object):
             # output file for debug purpose
             #
             # fieldnames_steer = ['proposed', 'cte_distance', 'cte_yaw']
-            # fieldnames_speed = ['ref_speed_raw', 'max_ref_spd','ref_spd','current_speed']
-            # with open(self.throttlefile, 'w') as csvfile:
-            #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            #     writer.writeheader()
-            #     writer.writerows(self.throttle_data)
-            #
-            # with open(self.brakefile, 'w') as csvfile:
-            #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            #     writer.writeheader()
-            #     writer.writerows(self.brake_data)
+            # fieldnames_speed = ['ref_speed_raw', 'max_ref_spd','ref_speed','current_speed']
             #
             # self.speed_data.append({'ref_speed_raw': ref_spd_raw,
             #                         'max_ref_spd': max_ref_spd,
