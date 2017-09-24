@@ -12,6 +12,7 @@ import math
 from longitudinal_control import LongitudinalController
 from lateral_control import LateralController
 
+
 import dbw_helper
 
 '''
@@ -152,6 +153,7 @@ class DBWNode(object):
 
             if self.dbw_enabled:
                 self.publish(throttle, brake, steer)
+
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
@@ -192,3 +194,4 @@ class DBWNode(object):
 
 if __name__ == '__main__':
     DBWNode()
+

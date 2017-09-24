@@ -16,6 +16,7 @@ eventlet.monkey_patch()
 sio = socketio.Server(async_mode='eventlet')
 
 app = Flask(__name__)
+
 msgs = {}
 
 dbw_enable = False
@@ -27,11 +28,13 @@ def connect(sid, environ):
 def send(topic, data):
     msgs[topic] = data
 
+
 bridge = Bridge(conf, send)
 
 @sio.on('telemetry')
 def telemetry(sid, data):
     global dbw_enable
+
     if data["dbw_enable"] != dbw_enable:
         dbw_enable = data["dbw_enable"]
         bridge.publish_dbw_status(dbw_enable)
