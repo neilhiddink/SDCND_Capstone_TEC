@@ -12,7 +12,7 @@ class LongitudinalController(object):
         self.accel_limit = accel_limit_
         self.decel_limit = decel_limit_
         self.max_throttle_torque = accel_limit_ * vehicle_mass_ * wheel_radius_
-        self.max_break_torque = decel_limit_ * vehicle_mass_ * wheel_radius_
+        self.max_break_torque = abs(decel_limit_ * vehicle_mass_ * wheel_radius_)
         self.sample_time = None
         self.cv = 0.32      # rolling resistance
         self.cr = 0.01      # aerodynamics drag
@@ -82,7 +82,7 @@ class LongitudinalController(object):
         """
         current_spd = current_spd+self.delay*self.control_action_last/self.vehicle_mass
 
-        controller = PID(kp=1.000000486681933e+07, ki=1.000000000000256e+04, kd=0)
+        controller = PID(kp=1.052854431521342e+03, ki=31.622776601683810, kd=0)
         speed_error = ref_spd - current_spd
 
         rolling_resistance = self.vehicle_mass*self.g*self.cr
