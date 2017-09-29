@@ -36,7 +36,7 @@ class WaypointUpdater(object):
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
         rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
-
+        rospy.Subscriber('/traffic_light_state', Int32, self.traffic_state_cb)
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
@@ -50,11 +50,13 @@ class WaypointUpdater(object):
 
         self.traffic_light_data = None
 
+        self.traffic_light_state = None
+
         self.loop()
 
     def loop(self):
         """ Publishes car index and subset of waypoints with target velocities """
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(5)
 
         while not rospy.is_shutdown():
             rate.sleep()
@@ -80,18 +82,25 @@ class WaypointUpdater(object):
                         min_diff = diff
                         closest_traffic_light_index = index
 
-            print closest_traffic_light_index
+            #print closest_traffic_light_index
 
             traffic_light_pose = self.traffic_light_data.lights[closest_traffic_light_index].pose.pose
-            traffic_light_state = self.traffic_light_data.lights[closest_traffic_light_index].state
+            #self.traffic_light_state = self.traffic_light_data.lights[closest_traffic_light_index].state
 
             stop_distance = waypoint_helper.get_distance(self.pose.position, traffic_light_pose.position)
-            print (stop_distance)
+            #print (stop_distance)
 
             # Distance from light to stop line is 25
 
-            # Green
-            if traffic_light_state != 2 and 20 < stop_distance < 50:
+            print(self.traffic_light_state.data)
+
+            go_flag = False
+            if self.traffic_light_state.data == 1 or self.traffic_light_state.data == 2:
+                #print("go_flag", go_flag)
+                go_flag = True
+
+
+            if go_flag is False and 20 < stop_distance < 50:
                 # Get subset waypoints ahead of vehicle and set target speeds
                 lookahead_waypoints = waypoint_helper.get_next_waypoints(self.base_waypoints,
                                                                          waypoint_index, LOOKAHEAD_WPS)
@@ -123,7 +132,14 @@ class WaypointUpdater(object):
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
         self.traffic_light_data = msg
+        #print("self.traffic_light_data", self.traffic_light_data)
         pass
+
+    def traffic_state_cb(self, msg):
+        # TODO: Callback for /traffic_waypoint message. Implement
+        self.traffic_light_state = msg
+        #print("self.traffic_light_state", self.traffic_light_state)
+        
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later

@@ -63,8 +63,8 @@ class TLDetector(object):
             self.light_classifier_is_ready = True
             t.cancel()
 
-        print("Loading light classifier (5 second timer)")
-        t = threading.Timer(5.0, light_warm_up_guard)
+        print("Loading light classifier (15 second timer)")
+        t = threading.Timer(15.0, light_warm_up_guard)
         t.daemon = True
         t.start()
 
