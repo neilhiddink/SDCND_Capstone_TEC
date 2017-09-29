@@ -92,12 +92,14 @@ class WaypointUpdater(object):
 
             # Distance from light to stop line is 25
 
-            print(self.traffic_light_state.data)
-
             go_flag = False
-            if self.traffic_light_state.data == 1 or self.traffic_light_state.data == 2:
-                #print("go_flag", go_flag)
-                go_flag = True
+
+            if self.traffic_light_state is not None:
+                print(self.traffic_light_state.data)
+
+                if self.traffic_light_state.data == 1 or self.traffic_light_state.data == 2:
+                    #print("go_flag", go_flag)
+                    go_flag = True
 
 
             if go_flag is False and 20 < stop_distance < 50:

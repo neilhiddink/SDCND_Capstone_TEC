@@ -18,5 +18,7 @@ conf = AttrDict({
         {'topic': '/vehicle/traffic_lights', 'type': 'trafficlights', 'name': 'trafficlights'},
         {'topic': '/vehicle/dbw_enabled', 'type': 'bool', 'name': 'dbw_status'},
         {'topic': '/image_color', 'type': 'image', 'name': 'image'},
+        {'topic': '/deep_net_out', 'type': 'image', 'name': 'image'},
+        {'topic': '/traffic_light_state', 'type': 'int', 'name': 'traffic_light_state'},
     ]
 })
