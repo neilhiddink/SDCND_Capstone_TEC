@@ -49,7 +49,6 @@ class WaypointUpdater(object):
         self.frame_id = None
 
         self.traffic_light_data = None
-
         self.traffic_light_state = None
 
         self.loop()
@@ -85,10 +84,10 @@ class WaypointUpdater(object):
             #print closest_traffic_light_index
 
             traffic_light_pose = self.traffic_light_data.lights[closest_traffic_light_index].pose.pose
-            #self.traffic_light_state = self.traffic_light_data.lights[closest_traffic_light_index].state
+            traffic_light_state = self.traffic_light_data.lights[closest_traffic_light_index].state
 
             stop_distance = waypoint_helper.get_distance(self.pose.position, traffic_light_pose.position)
-            #print (stop_distance)
+            print (stop_distance)
 
             # Distance from light to stop line is 25
 
@@ -101,8 +100,8 @@ class WaypointUpdater(object):
                     #print("go_flag", go_flag)
                     go_flag = True
 
-
-            if go_flag is False and 20 < stop_distance < 50:
+            #if go_flag is False and 20 < stop_distance < 50:
+            if traffic_light_state != 2 and 20 < stop_distance < 35:
                 # Get subset waypoints ahead of vehicle and set target speeds
                 lookahead_waypoints = waypoint_helper.get_next_waypoints(self.base_waypoints,
                                                                          waypoint_index, LOOKAHEAD_WPS)
