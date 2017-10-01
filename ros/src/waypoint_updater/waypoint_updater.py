@@ -83,10 +83,13 @@ class WaypointUpdater(object):
 
             #print closest_traffic_light_index
 
-            traffic_light_pose = self.traffic_light_data.lights[closest_traffic_light_index].pose.pose
+            stop_distance = 0;
+
+            if closest_traffic_light_index is not None:
+                traffic_light_pose = self.traffic_light_data.lights[closest_traffic_light_index].pose.pose
             # traffic_light_state = self.traffic_light_data.lights[closest_traffic_light_index].state
 
-            stop_distance = waypoint_helper.get_distance(self.pose.position, traffic_light_pose.position)
+                stop_distance = waypoint_helper.get_distance(self.pose.position, traffic_light_pose.position)
             # print (stop_distance)
 
             # Distance from light to stop line is 25

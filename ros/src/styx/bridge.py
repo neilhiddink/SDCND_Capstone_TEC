@@ -6,7 +6,6 @@ from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
 from dbw_mkz_msgs.msg import SteeringReport, ThrottleCmd, BrakeCmd, SteeringCmd
 from std_msgs.msg import Float32 as Float
 from std_msgs.msg import Bool
-from std_msgs.msg import Int32
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs.msg import Image
 import sensor_msgs.point_cloud2 as pcl2
@@ -32,8 +31,7 @@ TYPE = {
     'steer_cmd': SteeringCmd,
     'brake_cmd': BrakeCmd,
     'throttle_cmd': ThrottleCmd,
-    'image':Image,
-    'int':Int32
+    'image':Image
 }
 
 
@@ -57,9 +55,6 @@ class Bridge(object):
 
         self.publishers = {e.name: rospy.Publisher(e.topic, TYPE[e.type], queue_size=1)
                            for e in conf.publishers}
-
-    def register_server(self, server):
-        self.server = server
 
     def create_light(self, x, y, z, yaw, state):
         light = TrafficLight()
