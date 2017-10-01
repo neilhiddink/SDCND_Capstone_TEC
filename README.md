@@ -58,8 +58,18 @@ roslaunch launch/styx.launch
 ```
 4. Run the simulator
 
-### Real world testing
+### Real-World Testing
+
+Be sure to follow these steps prior to running the traffic light detection model:
++ cd \ros\src\tl_detector\light_classification
++ mkdir graphs
++ download and unzip [model weights (Simulator)](https://drive.google.com/open?id=0BzcEGp8MN5DiaGxsSkNlTEVVUVE)
++ download and unzip [model weights (Real)](https://drive.google.com/open?id=0BzcEGp8MN5DiTVhoNmxQUU5ldms)
++ download [label_map.pbtxt]https://drive.google.com/open?id=0BzcEGp8MN5DiUU94V3E0bWN3QVk
++ in \ros\src\tl_detector\light_classification change the flag in line 21, self.simulation to "False" for real world testing. Default model will work in both, but real trained one will work better.
+
 1. Download [training bag](https://drive.google.com/file/d/0B2_h37bMVw3iYkdJTlRSUlJIamM/view?usp=sharing) that was recorded on the Udacity self-driving car
+
 2. Unzip the file
 ```bash
 unzip traffic_light_bag_files.zip
@@ -73,3 +83,4 @@ rosbag play -l traffic_light_bag_files/loop_with_traffic_light.bag
 cd CarND-Capstone/ros
 roslaunch launch/site.launch
 ```
+
