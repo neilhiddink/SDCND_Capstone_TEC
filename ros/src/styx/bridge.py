@@ -56,9 +56,6 @@ class Bridge(object):
         self.publishers = {e.name: rospy.Publisher(e.topic, TYPE[e.type], queue_size=1)
                            for e in conf.publishers}
 
-    def register_server(self, server):
-        self.server = server
-
     def create_light(self, x, y, z, yaw, state):
         light = TrafficLight()
 

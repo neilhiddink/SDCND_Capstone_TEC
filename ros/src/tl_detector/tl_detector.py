@@ -63,8 +63,8 @@ class TLDetector(object):
             self.light_classifier_is_ready = True
             t.cancel()
 
-        print("Loading light classifier (5 second timer)")
-        t = threading.Timer(5.0, light_warm_up_guard)
+        print("Loading light classifier (10 second timer)")
+        t = threading.Timer(10.0, light_warm_up_guard)
         t.daemon = True
         t.start()
 
@@ -99,6 +99,8 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
+        #print("Image callback")
+
         if self.image_lock.acquire(True):
             
             self.has_image = True
@@ -160,6 +162,9 @@ class TLDetector(object):
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "rgb8")
 
         if self.light_classifier_is_ready is True:
+
+
+            print("Test")
 
             state = self.light_classifier.get_classification(cv_image)
 

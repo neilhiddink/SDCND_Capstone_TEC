@@ -3,7 +3,7 @@
 import rospy
 from std_msgs.msg import Int32
 from geometry_msgs.msg import PoseStamped
-from styx_msgs.msg import Lane, Waypoint
+from styx_msgs.msg import Lane, Waypoint, TrafficLightArray
 
 import math
 import waypoint_helper
@@ -35,6 +35,8 @@ class WaypointUpdater(object):
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
+        rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
+        rospy.Subscriber('/traffic_light_state', Int32, self.traffic_state_cb)
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
@@ -46,11 +48,14 @@ class WaypointUpdater(object):
         self.pose = None  #: Current vehicle location + orientation
         self.frame_id = None
 
+        self.traffic_light_data = None
+        self.traffic_light_state = None
+
         self.loop()
 
     def loop(self):
         """ Publishes car index and subset of waypoints with target velocities """
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(5)
 
         while not rospy.is_shutdown():
             rate.sleep()
@@ -58,17 +63,63 @@ class WaypointUpdater(object):
             if self.base_waypoints is None or self.pose is None or self.frame_id is None:
                 continue
 
+            if self.traffic_light_data is None:
+                continue
+
             # Where in base waypoints list the car is
             waypoint_index = waypoint_helper.get_closest_waypoint_index(self.pose, self.base_waypoints)
 
-            # Ask to cruise or brake car
-            target_speed = MAX_SPEED
+            closest_traffic_light_index = None
+            min_diff = 9999
+            for index, light in enumerate(self.traffic_light_data.lights):
+                is_ahead = waypoint_helper.is_waypoint_front(self.pose, light)
+                if is_ahead:
+                    traffic_light_index = \
+                        waypoint_helper.get_closest_waypoint_index(light.pose.pose, self.base_waypoints)
+                    diff = traffic_light_index - waypoint_index
+                    if diff < min_diff:
+                        min_diff = diff
+                        closest_traffic_light_index = index
 
-            # Get subset waypoints ahead of vehicle and set target speeds
-            lookahead_waypoints = waypoint_helper.get_next_waypoints(self.base_waypoints,
-                                                                     waypoint_index, LOOKAHEAD_WPS)
-            for waypoint in lookahead_waypoints:
-                waypoint.twist.twist.linear.x = target_speed
+            #print closest_traffic_light_index
+
+            stop_distance = 0;
+
+            if closest_traffic_light_index is not None:
+                traffic_light_pose = self.traffic_light_data.lights[closest_traffic_light_index].pose.pose
+            # traffic_light_state = self.traffic_light_data.lights[closest_traffic_light_index].state
+
+                stop_distance = waypoint_helper.get_distance(self.pose.position, traffic_light_pose.position)
+            # print (stop_distance)
+
+            # Distance from light to stop line is 25
+
+            go_flag = False
+
+            if self.traffic_light_state is not None:
+                print(self.traffic_light_state.data)
+
+                if self.traffic_light_state.data == 1 or self.traffic_light_state.data == 2:
+                    #print("go_flag", go_flag)
+                    go_flag = True
+
+            if go_flag is False and 20 < stop_distance < 35:
+            # if traffic_light_state != 2 and 20 < stop_distance < 35:
+                # Get subset waypoints ahead of vehicle and set target speeds
+                lookahead_waypoints = waypoint_helper.get_next_waypoints(self.base_waypoints,
+                                                                         waypoint_index, LOOKAHEAD_WPS)
+                for waypoint in lookahead_waypoints:
+                    waypoint.twist.twist.linear.x = 0
+            else:
+                # Ask to cruise or brake car
+                target_speed = MAX_SPEED
+
+                # Get subset waypoints ahead of vehicle and set target speeds
+                lookahead_waypoints = waypoint_helper.get_next_waypoints(self.base_waypoints,
+                                                                         waypoint_index, LOOKAHEAD_WPS)
+                for waypoint in lookahead_waypoints:
+                    waypoint.twist.twist.linear.x = target_speed
+
 
             # Publish
             lane = waypoint_helper.make_lane_object(self.frame_id, lookahead_waypoints)
@@ -84,7 +135,15 @@ class WaypointUpdater(object):
 
     def traffic_cb(self, msg):
         # TODO: Callback for /traffic_waypoint message. Implement
+        self.traffic_light_data = msg
+        #print("self.traffic_light_data", self.traffic_light_data)
         pass
+
+    def traffic_state_cb(self, msg):
+        # TODO: Callback for /traffic_waypoint message. Implement
+        self.traffic_light_state = msg
+        #print("self.traffic_light_state", self.traffic_light_state)
+        
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
