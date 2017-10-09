@@ -8,11 +8,13 @@ This repository contains the results of Team East Coast's capstone project for t
 [![YouTube](https://img.youtube.com/vi/4lzDBvFPQMM/0.jpg)](https://www.youtube.com/watch?v=4lzDBvFPQMM)
 
 ### Team Members
-- Anthony Sarkis (anthonysarkis@gmail.com)
-- Cahya Ong (cahya.ong@gmail.com)
-- Neil Hiddink (nhiddink2@gmail.com)
-- Xianan Huang (xnhuang@umich.edu)
-- Yasen Hu (yasenhu789@gmail.com)
+|     Name    |      Location     |     LinkedIn     |          |
+|-------------|-------------------|------------------|----------|
+| Neil Hiddink <br> (**Team Lead**) | Dearborn, MI | [linkedin.com/in/neilhiddink](https://www.linkedin.com/in/neilhiddink/) | <img src="./Resources/neil.jpg" alt="Neil" width="150" height="150"> |
+| Anthony Sarkis | Mountain View, CA | [linkedin.com/in/anthonysarkis](https://www.linkedin.com/in/anthonysarkis/) | <img src="./Resources/anthony.jpg" alt="Anthony" width="150" height="150"> |
+| Cahya Ong | Sydney, Australia | [linkedin.com/in/cahyaong](https://www.linkedin.com/in/cahyaong/) | <img src="./Resources/cahya.jpg" alt="Cahya" width="150" height="150"> |
+| Xianan Huang | Ann Arbor, MI | [linkedin.com/in/xianan-huang](https://www.linkedin.com/in/xianan-huang-227a476b/) | <img src="./Resources/xianan.jpg" alt="Xianan" width="150" height="150"> |
+| Yasen Hu | Warren, MI | [linkedin.com/in/yasenhu](https://www.linkedin.com/in/yasenhu/) | <img src="./Resources/yasen.jpg" alt="Yasen" width="150" height="150"> |
 
 ### Updates
 
